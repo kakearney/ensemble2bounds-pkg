@@ -1,5 +1,5 @@
 function [A, h] = ensemble2bnd(x,y,varargin)
-%ENSEMBLE2BND Calculates (and plots) percentile bounds for ensemble data
+%ENSEMBLE2BND Calculates (and plots) percentile bounds for ensemble data.
 %
 % ensemble2bnd(x,y)
 % ensemble2bnd(x,y, p1, v1, ...)
@@ -52,7 +52,8 @@ function [A, h] = ensemble2bnd(x,y,varargin)
 %                          whisker-ends, and center values will be medians.
 %                          Datasets will be staggered around the
 %                          x-coordinates in the same manner as an unstacked
-%                          bar plot.  
+%                          bar plot.  This option requires the Statistics
+%                          Toolbox.
 %           ['none']
 %
 %   alpha:  logical scalar, plot = boundedline only, true to use
@@ -147,6 +148,9 @@ x = x(:);
 % Adapt for boxplot
 
 if strcmp(Opt.plot, 'boxplot')
+    if isempty(ver('stats'))
+        error('The boxplot options requires the Statistics Toolbox');
+    end
     Opt.center = 'median';
 end
 
@@ -233,6 +237,7 @@ if ~strcmp(Opt.plot, 'none')
                 col = interp1([0 1], [1 1 1;Opt.cmap(iy,:)], trans);
                 set(h.errbar(:,iy), {'color'}, num2cell(col,2));
             end
+            set(h.ln, {'color'}, num2cell(Opt.cmap(1:length(h.ln),:),2));
 
         case 'boxplot'
 
@@ -267,6 +272,9 @@ if ~strcmp(Opt.plot, 'none')
             end
             
             % Calculate actual bounds used for quartile boxes and whiskers
+            
+            A.bndhi = nan(nx,ny,2);
+            A.bndlo = nan(nx,ny,2);
             
             for iy = 1:ny
                 for ix = 1:nx
